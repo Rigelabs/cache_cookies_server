@@ -12,7 +12,7 @@ cookieConnection.once("open",function(){
  })
  cookieConnection.on('disconnected', err => {
      console.log('Cookie DB disconnected'),
-         logger.error('Cookie DB disconnected')
+         logger.error('Cookie DB disconnected',err)
  })
  cookieConnection.on('reconnected', err => {
      console.log('Cookie DB reconnected'),
@@ -31,7 +31,7 @@ cookieConnection.once("open",function(){
     })
     gigsConnection.on('disconnected', err => {
         console.log('Gigs DB disconnected'),
-            logger.error('Gigs DB disconnected')
+            logger.error('Gigs DB disconnected',err)
     })
     gigsConnection.on('reconnected', err => {
         console.log('Gigs DB reconnected'),

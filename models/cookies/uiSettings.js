@@ -4,6 +4,7 @@ const UISchema = new mongoose.Schema({
     setBy:String,
     lightMode:String,
     font: String,
+    language:String
       
 },{timestamps:true})
 

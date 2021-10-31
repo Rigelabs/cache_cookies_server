@@ -1,20 +1,19 @@
 const express = require('express');
-
 const helmet = require('helmet');
 const cors = require('cors');
 const env = require('dotenv');
-const mongoose = require('mongoose');
 const logger = require('./middlewares/logger');
-
-
 const process = require('process');
 
 
 
 const app = express()
 // Cross-origin resource sharing (CORS) is a mechanism that allows 
-//restricted resources on a web page to be requested from another domain outside the domain from which the first resource was served
-app.use(cors());
+//restricted resources on a web page to be requested from another domain outside the domain from which the first resource was served.
+const corsOptions={
+  origin: process.env.GIGS_FRONTEND_URL
+}
+app.use(cors(corsOptions));
 
 
 //initialize bodyparser
@@ -40,9 +39,10 @@ app.listen(PORT, () => {
 
 
 //Routes
-const gigsRoutes= require('./routes/gigs')
-
-app.use('/api', gigsRoutes.routes);
+const gigsRoutes= require('./routes/gigs');
+const cookieRoutes = require('./routes/cookies');
+app.use('/api/gigs', gigsRoutes.routes);
+app.use('/api/cookies',cookieRoutes.routes);
 
 // Capture 500 errors
 app.use((err, req, res, next) => {
