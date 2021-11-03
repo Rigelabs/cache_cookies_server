@@ -64,7 +64,7 @@ async function allViewedGigs(req, res) {
                 return res.status(200).json(JSON.parse(result));
             } else {
                 cookieCollection.find().toArray(function (err, data) {
-                    if (err) return (res.status(501).json({ message: err.message }), logger.error(err), console.log(err))
+                    if (err) return (res.status(501).json({ message: err.message }), logger.error(err))
                     if (data) {
                         //save to redis
                         redisClient.set("viewedGigs", JSON.stringify(data), "EX", 60 * 5, (err) => {
@@ -79,7 +79,7 @@ async function allViewedGigs(req, res) {
 
 
     } catch (error) {
-        console.log(error.message)
+        res.status(400).json({ message: error })
     }
 
 

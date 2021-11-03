@@ -1,7 +1,9 @@
 const { RateLimiterRedis } = require('rate-limiter-flexible');
+const AT_Sms = require('../africaTalking');
 
 const logger = require('../logger');
 const redisClient = require('../redis');
+const twilioSMS = require('../twilioSMS');
 
 
 const opts = {
@@ -26,7 +28,9 @@ const generalrateLimiterMiddleware = (req, res, next) => {
             }else{
               res.status(429).json({message:'Too Many Requests'});
             const secs = Math.round(rejRes.msBeforeNext / 1000) || 1;
-            logger.warn(` Retry-After - ${String(secs)} Seconds - ${res.statusMessage}-${rejRes.status || 429} - ${req.originalUrl} - ${req.method} - ${req.ip}`)
+            //AT_Sms(process.env.AFRICAS_TALKING_PHONE_NUMBER,` Retry-After - ${String(secs)} Seconds - ${res.statusMessage}-${rejRes.status || 429} - ${req.originalUrl} - ${req.method} - ${req.ip}`)
+            twilioSMS(` Retry-After - ${String(secs)} Seconds - ${res.statusMessage}-${rejRes.status || 429} - ${req.originalUrl} - ${req.method} - ${req.ip}`,"+254720422288")
+            logger.warn(`Too Many Requests. Retry-After - ${String(secs)} Seconds - ${res.statusMessage}-${rejRes.status || 429} - ${req.originalUrl} - ${req.method} - ${req.ip}`)
             }
           });
   

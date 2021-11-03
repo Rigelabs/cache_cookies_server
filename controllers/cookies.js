@@ -2,6 +2,8 @@ const env = require('dotenv');
 const logger = require("../middlewares/logger");
 const Joi= require('joi');
 const { cookieConnection } = require('../middlewares/mongoose');
+const redisClient = require('../middlewares/redis');
+const sendOTP = require('../middlewares/aws_sns');
 
 env.config();
 
@@ -45,5 +47,54 @@ async function uiSettings(req,res){
         res.status(400).json({message:error})
     }
 }
+async function getUISettings(req,res){
+    try {
+        const cookieCollection = cookieConnection.collection("settings")
+        await redisClient.get(`${req.params.user_id}uiSettings`, (err,data)=>{
+            if (err) return logger.error(err);
+            if (data) {
+                return res.status(200).json(JSON.parse(data));
+            } else {
+                cookieCollection.find({setBy:req.params.user_id}).toArray(function(err,result){
+                    if (err) return (res.status(501).json({ message: err.message }), logger.error(err))
+                    if (result) {
+                        //save to redis
+                        redisClient.set(`${req.params.user_id}uiSettings`, JSON.stringify(result), "EX", 60, (err) => {
+                            if (err) return res.status(400).json({ message: err })
+                            return res.status(200).json({ result });
+                        })
 
-module.exports = uiSettings;
+                    }
+                })
+            }
+        })
+    } catch (error) {
+        res.status(400).json({message:error})
+    }
+}
+async function getAllUISettings(req,res){
+    try {
+        const cookieCollection = cookieConnection.collection("settings")
+        await redisClient.get('uiSettings', (err,data)=>{
+            if (err) return logger.error(err);
+            if (data) {
+                return res.status(200).json(JSON.parse(data));
+            } else {
+                cookieCollection.find().toArray(function(err,result){
+                    if (err) return (res.status(501).json({ message: err.message }), logger.error(err))
+                    if (result) {
+                        //save to redis
+                        redisClient.set('uiSettings', JSON.stringify(result), "EX", 60, (err) => {
+                            if (err) return res.status(400).json({ message: err })
+                            return res.status(200).json({ result });
+                        })
+
+                    }
+                })
+            }
+        })
+    } catch (error) {
+        return (res.status(400).json({message:error}))
+    }
+}
+module.exports = {uiSettings,getUISettings,getAllUISettings};

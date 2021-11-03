@@ -1,33 +1,42 @@
-const { SNSClient, PublishCommand } = require('@aws-sdk/client-sns');
+const AWS = require('aws-sdk');
 const { customAlphabet } = require('nanoid/non-secure');
 const env = require('dotenv');
 const redisClient = require('./redis');
+const logger = require('./logger');
 env.config();
 
 const nanoid = customAlphabet('1234567890ABCDEF', 6)
 
-const SNS_Client = new SNSClient({ region: process.env.AWS_REGION,
+const SNS_Client = new AWS.SNS({ region: process.env.AWS_REGION,
                                     credentials:({
-                                        AWS_ACCESS_KEY_ID:process.env.AWS_ACCESS_KEY_ID,
-                                        AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY
-                                    }) 
+                                        accessKeyId:process.env.AWS_ACCESS_KEY_ID,
+                                        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+                                    }),
+                                   
                                 })
 
 async function sendOTP(mobileno) {
-    const mobileNo = mobileno;
+    
     const otp_code = nanoid();
-    console.log(otp_code)
-    const params = {
-        Message: `Welcome! your mobile verification code is: ${otp_code}. Mobile Number is: ${mobileNo}`,
-        PhoneNumber: mobileNo,
-    };
-    try {
-        const data= await SNS_Client.send(new PublishCommand(params));
-        if(data){
-            await redisClient.set(mobileNo.toString(),JSON.stringify({redisCode:otp_code}),exp,60)
 
-        }
-        return console.log("OTP sent", data)
+    const params = {
+        Message: `Welcome! your mobile verification code is: ${otp_code}. Mobile Number is: ${mobileno}`,
+        PhoneNumber: mobileno,
+        //TopicArn:process.env.TOPICARN,
+    };
+  
+    try {
+        SNS_Client.publish(params, (err,data)=>{
+            if(data){
+                redisClient.set(mobileno.toString(),JSON.stringify({redisCode:otp_code}),'EXP',60,(err,result)=>{
+                    if(err) return logger.error(err)
+                    
+                })
+                return console.log("OTP sent", data)
+            }
+           if(err) return console.log(err)
+        });
+       
     } catch (err) {
             return console.log(err.stack)
     

@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const UISchema = new mongoose.Schema({
-    setBy:String,
-    lightMode:String,
-    font: String,
-    language:String
+    setBy:{type:String},
+    lightMode:{type:String,default:"light"},
+    font: {type:String,default:"12px"},
+    language:{type:String,default:"English"}
       
 },{timestamps:true})
 

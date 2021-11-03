@@ -1,6 +1,9 @@
 const http = require('http');
 const { URL } = require('url');
+const AT_Sms = require('./africaTalking');
+const sendOTP = require('./aws_sns');
 const logger = require('./logger');
+const twilioSMS = require('./twilioSMS');
 //call auth backend to verify the token
 
 async function verifyToken(req, res,next) {
@@ -31,7 +34,7 @@ async function verifyToken(req, res,next) {
     })
     reqData.end();
 }else{
-    return res.status(401).json({message: "Invalid Request"})
+    return(res.status(401).json({message: "Invalid Request"}))
 }
     
 }
